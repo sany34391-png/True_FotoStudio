@@ -1,0 +1,221 @@
+.header {
+  position: sticky;
+  top: 10px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 97%;
+  height: 50px;
+  margin: 10px auto 0;
+  padding: 0 14px;
+  background-color: var(--green);
+  border: 5px solid var(--green-soft);
+  border-radius: 90px;
+  box-shadow: var(--shadow-md);
+  color: var(--on-green);
+  animation: header-in 0.9s ease both;
+
+
+  &__logo {
+    display: flex;
+    flex: none;
+    border-radius: 50%;
+    transition: transform 0.8s ease;
+
+    &:hover { transform: scale(1.2); }
+
+    &:active {
+      transform: rotate(360deg) scale(0.88);
+      transition-duration: 0.08s;
+    }
+  }
+
+
+  &__title {
+    margin: 0;
+    line-height: 1;
+    font-family: var(--font);
+    font-weight: var(--fw-bold);
+    font-size: clamp(18px, 2.4vw, 24px);
+    letter-spacing: 0.04em;
+    color: var(--on-green);
+  }
+
+
+  &__nav {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 2.5vw, 28px);
+    margin-left: auto;
+
+    a {
+      position: relative;
+      padding: 4px 0;
+      font-size: 15px;
+      font-weight: var(--fw-medium);
+      color: var(--on-green);
+      text-decoration: none;
+      opacity: 0.85;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 2px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.6s ease;
+      }
+
+      &:hover { opacity: 1; transform: translateY(-1px); }
+      &:hover::after { transform: scaleX(1); }
+
+      &:active {
+        transform: translateY(1px) scale(0.96);
+        transition-duration: 0.08s;
+      }
+    }
+  }
+
+  /* ---------- перемикач теми ---------- */
+  &__theme-toggle {
+    order: 3;
+    display: flex;
+    flex: none;
+    margin-left: 6px;
+  }
+
+  /* ---------- бургер (на комп'ютері схований) ---------- */
+  &__burger {
+    order: 4;
+    display: none;
+    position: relative;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--on-green);
+    cursor: pointer;
+    transition: transform 0.5s ease, background-color 0.5s ease;
+
+    span {
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      transition: transform 0.5s ease, opacity 0.3s ease, top 0.5s ease;
+    }
+
+    span:nth-child(1) { top: 11px; }
+    span:nth-child(2) { top: 16px; }
+    span:nth-child(3) { top: 21px; }
+
+    &:hover { background: rgba(255, 255, 255, 0.12); }
+
+    &:active {
+      transform: scale(0.9);
+      transition-duration: 0.08s;
+    }
+
+    /* три риски перетворюються на хрестик */
+    &--open span:nth-child(1) { top: 16px; transform: rotate(45deg); }
+    &--open span:nth-child(2) { opacity: 0; }
+    &--open span:nth-child(3) { top: 16px; transform: rotate(-45deg); }
+  }
+}
+
+@keyframes header-in {
+  from { opacity: 0; transform: translateY(-30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= ТЕЛЕФОН ================= */
+@media (max-width: 700px) {
+  .header {
+    gap: 8px;
+    padding: 0 10px;
+
+    /* перемикач теми притискається вправо, бургер після нього */
+    &__theme-toggle { margin-left: auto; }
+    &__burger { display: block; }
+
+    /* меню перетворюється на випадаючу панель під шапкою */
+    &__nav {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+      margin: 0;
+      padding: 12px;
+      background-color: var(--green);
+      border: 5px solid var(--green-soft);
+      border-radius: 28px;
+      box-shadow: var(--shadow-md);
+
+      /* закрите */
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-12px) scale(0.98);
+      transform-origin: top center;
+      transition: opacity 0.5s ease, transform 0.5s ease, visibility 0s 0.5s;
+
+      a {
+        padding: 12px 16px;
+        font-size: 17px;
+        border-radius: 16px;
+        opacity: 1;
+        transition: background-color 0.4s ease, transform 0.4s ease;
+
+        &::after { display: none; }
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.12);
+          transform: none;
+        }
+
+        &:active {
+          transform: scale(0.97);
+          transition-duration: 0.08s;
+        }
+      }
+
+      /* відкрите */
+      &--open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: none;
+        transition: opacity 0.5s ease, transform 0.5s ease, visibility 0s;
+      }
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .header__logo,
+  .header__nav,
+  .header__nav a,
+  .header__nav a::after,
+  .header__burger,
+  .header__burger span {
+    animation: none;
+    transition: none;
+  }
+}

@@ -9,6 +9,8 @@
     <meta name="description" content="True — печать и обработка фотографий, печать photo любых размеров, фотокниги и photoальбомы на заказ под ключ. Закажите печать photo с доставкой."/>
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://домен.ru/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;800&display=swap" rel="stylesheet">
     <!-- Open Graph -->
     <meta property="og:title" content="True — печать фото, фотокниги и фотоальбомы на заказ" />
     <meta property="og:description" content="Печать фотографий любых размеров, обработка фото, фотокниги и фотоальбомы на заказ под ключ."/>
@@ -19,5 +21,12 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        var t = localStorage.getItem("theme");
+        if (t !== "light" && t !== "dark") t = "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
   </body>
 </html>
