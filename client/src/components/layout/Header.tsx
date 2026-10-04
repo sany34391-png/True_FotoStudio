@@ -33,6 +33,7 @@ export default function Header() {
         onClick={() => setOpen(false)}
       >
         <Link to="/">Главная</Link>
+        <Link to="/buyfoto">Заказать фото</Link>
         <Link to="/portfolio">Портфолио</Link>
         <Link to="/reviews">Отзывы</Link>
       </nav>

@@ -1,9 +1,8 @@
 :root {
-  /* цвета */
-  --bg: #152e24;
+  --bg: #ececec;
   --surface: #ffffff;
   --sage: #E3EAE1;
-  --ink: #bebebe;
+  --ink: #4F8461;
   --gray: #6A706B;
   --green: #4F8461;
   --green-soft: #2b614c;
@@ -51,7 +50,7 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #121613;
+  --bg: #152e24;
   --surface: #1A201C;
   --sage: #222B25;
   --ink: #bebebe;

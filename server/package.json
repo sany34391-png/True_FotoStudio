@@ -5,12 +5,14 @@
   "private": true,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^26.6.3"
+    "@types/node": "^26.6.3",
+    "@types/nodemailer": "^8.0.2"
   },
   "peerDependencies": {
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "nodemailer": "^10.0.14",
     "zod": "^4.6.5"
   }
 }
