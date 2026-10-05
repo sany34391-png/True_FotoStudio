@@ -1,0 +1,52 @@
+.advantages {
+  width: min(90vw, 1400px);
+  margin: 5vw auto;
+  transition: all 0.5s ease-in-out;
+
+  &__title {
+    margin: 0 0 24px;
+    font-size: clamp(24px, 3.4vw, 38px);
+  }
+
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__card {
+    padding: 24px;
+    background: var(--surface);
+    border: 3px solid var(--line);
+    border-top: 5px solid var(--green);
+    border-radius: 16px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  &__card-title {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: var(--green);
+  }
+
+  &__card-text {
+    margin: 0;
+    color: var(--gray);
+  }
+}
+
+@media (hover: hover) {
+  .advantages__card:hover {
+    transform: translateY(-5px) scale(1.05) rotate(1deg);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .advantages__card {
+    transition: none;
+  }
+}

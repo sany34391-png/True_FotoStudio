@@ -15,15 +15,21 @@
   box-shadow: var(--shadow-md);
   color: var(--on-green);
   animation: header-in 0.9s ease both;
+  transition: scale 0.6s ease, box-shadow 0.6s ease;
 
+  /* при прокрутке шапка чуть увеличивается */
+  &--scrolled {
+    scale: 1.02;
+  }
 
+  /* ---------- логотип ---------- */
   &__logo {
     display: flex;
     flex: none;
     border-radius: 50%;
     transition: transform 0.8s ease;
 
-    &:hover { transform: scale(1.2); }
+    &:hover { transform: rotate(360deg); }
 
     &:active {
       transform: rotate(360deg) scale(0.88);
@@ -31,7 +37,7 @@
     }
   }
 
-
+  /* ---------- название ---------- */
   &__title {
     margin: 0;
     line-height: 1;
@@ -42,7 +48,7 @@
     color: var(--on-green);
   }
 
-
+  /* ---------- меню (компьютер) ---------- */
   &__nav {
     order: 2;
     display: flex;
@@ -92,7 +98,7 @@
     margin-left: 6px;
   }
 
-  /* ---------- бургер (на комп'ютері схований) ---------- */
+  /* ---------- бургер (на компьютере скрыт) ---------- */
   &__burger {
     order: 4;
     display: none;
@@ -129,7 +135,6 @@
       transition-duration: 0.08s;
     }
 
-    /* три риски перетворюються на хрестик */
     &--open span:nth-child(1) { top: 16px; transform: rotate(45deg); }
     &--open span:nth-child(2) { opacity: 0; }
     &--open span:nth-child(3) { top: 16px; transform: rotate(-45deg); }
@@ -147,11 +152,9 @@
     gap: 8px;
     padding: 0 10px;
 
-    /* перемикач теми притискається вправо, бургер після нього */
     &__theme-toggle { margin-left: auto; }
     &__burger { display: block; }
 
-    /* меню перетворюється на випадаючу панель під шапкою */
     &__nav {
       position: absolute;
       top: calc(100% + 10px);
@@ -167,7 +170,6 @@
       border-radius: 28px;
       box-shadow: var(--shadow-md);
 
-      /* закрите */
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -195,7 +197,6 @@
         }
       }
 
-      /* відкрите */
       &--open {
         opacity: 1;
         visibility: visible;

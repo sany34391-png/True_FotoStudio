@@ -7,6 +7,7 @@ const Logo = "/logo.svg";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -16,8 +17,20 @@ export default function Header() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY > 10);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="header" aria-label="Шапка сайта">
+    <header
+      className={`header${scrolled ? " header--scrolled" : ""}`}
+      aria-label="Шапка сайта"
+    >
       <Link to="/" className="header__logo" aria-label="TRUE, перейти на главную">
         <img src={Logo} alt="Logo" width={30} height={30} />
       </Link>

@@ -1,0 +1,204 @@
+
+.hero {
+  display: flex;
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  width: min(90vw, 1400px);
+  margin: 5vw auto;
+  overflow-x: clip;       
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;              
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 4.2vw, 52px);
+  }
+
+  p {
+    margin: 0;
+    font-size: clamp(15px, 1.6vw, 18px);
+  }
+}
+
+
+.hero-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.hero-button {
+  display: inline-block;
+  padding: 14px 28px;
+  border: 2px solid var(--green);
+  border-radius: 12px;
+  font-weight: var(--fw-bold);
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  transition: transform 0.5s ease, background-color 0.5s ease,
+    color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+
+  &:active {
+    transform: translateY(1px) scale(0.97);
+    transition-duration: 0.08s;
+  }
+}
+
+.hero-button_buyfoto {
+  background: var(--green);
+  color: var(--on-green);
+}
+
+.hero-button_portfolio {
+  background: transparent;
+  color: var(--ink);
+}
+
+
+.hero-image {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+.hero-image-stack {
+  position: relative;
+  width: 40vw;
+  max-width: 600px;
+}
+
+.hero-image-studio {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 5px solid #4F8461;
+  transition: all 0.5s ease-in-out;
+}
+
+.hero-image-trueadam {
+  position: absolute;
+  left: 0;
+  top: 60%;
+  translate: -40% -50%;
+  z-index: 2;
+  width: 10vw;
+  max-width: 200px;
+  height: auto;
+  border-radius: 5px;
+  border: 5px solid #9bdbaf;
+  transition: all 0.5s ease-in-out;
+}
+
+
+@media (hover: hover) {
+  .hero-button_buyfoto:hover {
+    background: var(--green-soft);
+    border-color: var(--green-soft);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero-button_portfolio:hover {
+    background: var(--green);
+    color: var(--on-green);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .hero-image-studio:hover {
+    border: 7px solid #78c391;
+    box-shadow: 0px 0px 7px 4px #4F8461;
+    scale: 1.05;
+  }
+
+  .hero-image-trueadam:hover {
+    border: 7px solid #a2d9b4;
+    box-shadow: 0px 0px 7px 4px #8cd4a4;
+    scale: 1.1;
+    rotate: 4deg;
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .hero {
+    width: 92vw;
+    margin: 4vw auto;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .hero-content {
+    width: 100%;
+  }
+
+  .hero-image {
+    width: 100%;
+  }
+
+  .hero-image-stack {
+    width: min(80vw, 520px);
+  }
+
+  .hero-image-trueadam {
+    width: 22vw;
+    max-width: 140px;
+    translate: -25% -50%;  
+  }
+}
+
+
+@media (max-width: 480px) {
+  .hero {
+    gap: 28px;
+    margin: 6vw auto;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-button {
+    width: 100%;               
+  }
+
+  .hero-image-stack {
+    width: 86vw;
+  }
+
+  .hero-image-trueadam {
+    width: 24vw;
+    top: 62%;
+    translate: -10% -50%;
+    border-width: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-button,
+  .hero-image-studio,
+  .hero-image-trueadam {
+    transition: none;
+  }
+}
