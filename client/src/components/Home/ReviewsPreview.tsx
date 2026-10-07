@@ -12,7 +12,7 @@ export default function ReviewsPreview() {
         </p>
       </div>
       <div className="reviews-preview__actions">
-        <Link className="reviews-preview__button" to="/reviews">
+        <Link className="reviews-preview__button" to="/reviews" viewTransition>
           Все отзывы
           <span aria-hidden="true">→</span>
         </Link>

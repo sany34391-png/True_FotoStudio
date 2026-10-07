@@ -31,7 +31,7 @@ export default function Header() {
       className={`header${scrolled ? " header--scrolled" : ""}`}
       aria-label="Шапка сайта"
     >
-      <Link to="/" className="header__logo" aria-label="TRUE, перейти на главную">
+      <Link to="/" viewTransition className="header__logo" aria-label="TRUE, перейти на главную">
         <img src={Logo} alt="Logo" width={30} height={30} />
       </Link>
       <h1 className="header__title">True</h1>
@@ -45,10 +45,10 @@ export default function Header() {
         aria-label="Основное меню"
         onClick={() => setOpen(false)}
       >
-        <Link to="/">Главная</Link>
-        <Link to="/buyfoto">Заказать фото</Link>
-        <Link to="/portfolio">Портфолио</Link>
-        <Link to="/reviews">Отзывы</Link>
+        <Link to="/" viewTransition>Главная</Link>
+        <Link to="/buyfoto" viewTransition>Заказать фото</Link>
+        <Link to="/portfolio" viewTransition>Портфолио</Link>
+        <Link to="/reviews" viewTransition>Отзывы</Link>
       </nav>
 
       <button

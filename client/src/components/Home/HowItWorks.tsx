@@ -16,11 +16,12 @@ export default function HowItWorks() {
           <li>Поделитесь впечатлениями — будем рады вашему отзыву</li>
         </ol>
         <div className="how-it-works-actions">
-          <Link to="/buyfoto" className="how-it-works-button">
+          <Link to="/buyfoto" viewTransition className="how-it-works-button">
             Заказать фото
           </Link>
           <Link
             to="/reviews"
+            viewTransition
             className="how-it-works-button how-it-works-button--secondary"
           >
             Оставить отзыв

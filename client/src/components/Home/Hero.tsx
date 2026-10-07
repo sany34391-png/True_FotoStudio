@@ -14,10 +14,10 @@ export default function Hero() {
         <p>• Мы предлагаем индивидуальный подход к каждому клиенту и делаем фотографии, которые соответствуют вашим потребностям и ожиданиям.</p>
 
         <div className="hero-buttons">
-          <Link to="/buyfoto" className="hero-button hero-button_buyfoto">
+          <Link to="/buyfoto" viewTransition className="hero-button hero-button_buyfoto">
             Заказать фото
           </Link>
-          <Link to="/portfolio" className="hero-button hero-button_portfolio">
+          <Link to="/portfolio" viewTransition className="hero-button hero-button_portfolio">
             Наше портфолио
           </Link>
         </div>
