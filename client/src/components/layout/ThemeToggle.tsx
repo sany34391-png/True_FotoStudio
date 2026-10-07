@@ -4,8 +4,11 @@ import "./ThemeToggle.scss";
 type Theme = "light" | "dark";
 
 function getStartTheme(): Theme {
-  const saved = localStorage.getItem("theme");
-  return saved === "light" ? "light" : "dark";
+  try {
+    return window.localStorage.getItem("theme") === "light" ? "light" : "dark";
+  } catch {
+    return "dark";
+  }
 }
 
 export default function ThemeToggle() {
@@ -13,7 +16,11 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    try {
+      window.localStorage.setItem("theme", theme);
+    } catch {
+      // The selected theme still works for the current page if storage is blocked.
+    }
   }, [theme]);
 
   function toggle() {

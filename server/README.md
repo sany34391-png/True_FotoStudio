@@ -1,15 +1,17 @@
-# server
+# Server
 
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
+Run the server in development mode with Bun's file watcher:
 
 ```bash
-bun run index.ts
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.3.13. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Run it once without the watcher:
+
+```bash
+bun run start
+```
+
+The current `index.ts` is only a placeholder and does not start an HTTP API.
+Customer reviews are displayed and submitted through the Yandex Maps listing;
+this server is not required by the client.
