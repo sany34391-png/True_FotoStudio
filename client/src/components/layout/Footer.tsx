@@ -29,6 +29,10 @@ export default function Footer() {
             <span className="footer__contact-label">Telegram</span>
             <span className="footer__contact-value">@m1hail_true</span>
           </a>
+          <a href="mailto:t64117837@gmail.com">
+            <span className="footer__contact-label">Электронная почта</span>
+            <span className="footer__contact-value">t64117837@gmail.com</span>
+          </a>
         </section>
 
         <nav className="footer__nav" aria-label="Навигация в подвале сайта">

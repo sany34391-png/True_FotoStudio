@@ -1,47 +1,130 @@
 .advantages {
   width: min(90vw, 1400px);
-  margin: 5vw auto;
-  transition: all 0.5s ease-in-out;
+  margin: clamp(56px, 8vw, 104px) auto;
+
+  &__heading {
+    max-width: 650px;
+    margin-bottom: clamp(24px, 4vw, 40px);
+  }
+
+  &__eyebrow {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--green);
+    font-size: 13px;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
 
   &__title {
-    margin: 0 0 24px;
-    font-size: clamp(24px, 3.4vw, 38px);
+    margin: 0 0 12px;
+    font-size: clamp(30px, 4.5vw, 48px);
+    letter-spacing: -0.04em;
+  }
+
+  &__heading p {
+    margin: 0;
+    color: var(--gray);
+    font-size: clamp(15px, 1.6vw, 18px);
   }
 
   &__list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 24px);
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
   &__card {
-    padding: 24px;
+    position: relative;
+    display: flex;
+    min-height: 250px;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: hidden;
+    padding: clamp(22px, 2.8vw, 32px);
     background: var(--surface);
-    border: 3px solid var(--line);
-    border-top: 5px solid var(--green);
-    border-radius: 16px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.25s ease, border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  &__card-top {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  &__number {
+    color: var(--gray);
+    font-size: 13px;
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.08em;
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    padding: 11px;
+    border-radius: 15px;
+    background: var(--sage);
+    color: var(--green);
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
   }
 
   &__card-title {
-    margin: 0 0 8px;
-    font-size: 20px;
+    margin: 0 0 10px;
+    font-size: clamp(18px, 2vw, 22px);
     color: var(--green);
   }
 
   &__card-text {
     margin: 0;
     color: var(--gray);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  &__card-accent {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green-soft), var(--green), transparent);
+    opacity: 0.75;
   }
 }
 
 @media (hover: hover) {
   .advantages__card:hover {
-    transform: translateY(-5px) scale(1.05) rotate(1deg);
+    transform: translateY(-5px);
+    border-color: var(--green);
     box-shadow: var(--shadow-md);
+  }
+}
+
+@media (max-width: 760px) {
+  .advantages__list {
+    grid-template-columns: 1fr;
+  }
+
+  .advantages__card {
+    min-height: 0;
+  }
+
+  .advantages__card-top {
+    margin-bottom: 20px;
   }
 }
 
