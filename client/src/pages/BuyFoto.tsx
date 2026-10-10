@@ -1,12 +1,13 @@
+import DimensionFOTO from "../components/BuyFoto/dimensionsFOTO";
+import Order from "../components/BuyFoto/order";
+import Catalog from "../components/BuyFoto/catalog";
 
 export default function BuyFoto() {
   return (
     <div>
-      <h1>Заказ фото</h1>
-
-      <p>
-        Здесь вы сможет заказать фото.
-      </p>
+      <Order />
+      <DimensionFOTO />
+      <Catalog />
     </div>
   );
 }

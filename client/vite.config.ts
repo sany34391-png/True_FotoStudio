@@ -12,6 +12,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     headers: securityHeaders,
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
   },
   preview: {
     headers: securityHeaders,
