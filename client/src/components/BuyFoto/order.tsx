@@ -7,6 +7,7 @@ type OrderFields = {
   photoCount: string;
   category: string;
   photoDescription: string;
+  contact: string;
 };
 
 const initialFields: OrderFields = {
@@ -14,6 +15,7 @@ const initialFields: OrderFields = {
   photoCount: "1",
   category: "",
   photoDescription: "",
+  contact: "",
 };
 
 function hasUnsupportedControlCharacters(value: string) {
@@ -43,6 +45,17 @@ const safeDescription = (label: string, maxLength: number) =>
       "Удалите недопустимые управляющие символы",
     );
 
+function isValidContact(value: string) {
+  const compactPhone = value.replace(/[()\s-]/g, "");
+  const telegramUsername = value.startsWith("@") ? value.slice(1) : value;
+
+  return (
+    /^\+?\d{7,15}$/.test(compactPhone) ||
+    z.email().safeParse(value).success ||
+    /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegramUsername)
+  );
+}
+
 const orderSchema = z.object({
   messageDescription: safeDescription("Напишите сообщение", 2000),
   photoCount: z
@@ -53,6 +66,10 @@ const orderSchema = z.object({
     .pipe(z.number().int().min(1, "Минимум 1 фотография").max(500, "Максимум 500 фотографий")),
   category: safeDescription("Укажите категорию", 100),
   photoDescription: safeDescription("Опишите, какими должны быть фотографии", 4000),
+  contact: safeDescription("Укажите телефон, email или Telegram", 254).refine(
+    isValidContact,
+    "Введите телефон, email или Telegram-имя (например, @username)",
+  ),
   website: z.literal("").default(""),
 }).strict();
 
@@ -213,7 +230,7 @@ export default function Order() {
               <span className="photo-order__eyebrow">Несколько деталей</span>
               <h2>Расскажите о заказе</h2>
             </div>
-            <span className="photo-order__step">01 / 04</span>
+            <span className="photo-order__step">01 / 05</span>
           </div>
 
           <label className="photo-order__field">
@@ -294,6 +311,27 @@ export default function Order() {
             {errors.photoDescription && (
               <span className="photo-order__field-error" id="photo-description-error" role="alert">
                 {errors.photoDescription}
+              </span>
+            )}
+          </label>
+
+          <label className="photo-order__field">
+            <span><b>05</b> Как с вами связаться?</span>
+            <input
+              name="contact"
+              type="text"
+              placeholder="Телефон, email или @username в Telegram"
+              autoComplete="off"
+              value={fields.contact}
+              onChange={(event) => updateField("contact", event.target.value)}
+              maxLength={254}
+              aria-invalid={Boolean(errors.contact)}
+              aria-describedby={errors.contact ? "contact-error" : undefined}
+              required
+            />
+            {errors.contact && (
+              <span className="photo-order__field-error" id="contact-error" role="alert">
+                {errors.contact}
               </span>
             )}
           </label>

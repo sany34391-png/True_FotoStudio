@@ -31,8 +31,8 @@ const smtpConfigured = Boolean(
   env.SMTP_HOST &&
     env.SMTP_USER &&
     env.SMTP_PASS &&
-  env.SMTP_USER !== "your-sender@gmail.com" &&
-  env.SMTP_PASS !== "your-google-app-password",
+    env.SMTP_USER !== "your-sender@gmail.com" &&
+    env.SMTP_PASS !== "your-google-app-password",
 );
 const transporter = smtpConfigured
   ? nodemailer.createTransport({
@@ -62,12 +62,28 @@ const descriptionSchema = (maxLength: number, label: string) =>
       `${label} contains unsupported control characters`,
     );
 
+function isValidContact(value: string) {
+  const compactPhone = value.replace(/[()\s-]/g, "");
+  const telegramUsername = value.startsWith("@") ? value.slice(1) : value;
+
+  return (
+    /^\+?\d{7,15}$/.test(compactPhone) ||
+    z.email().safeParse(value).success ||
+    /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(telegramUsername)
+  );
+}
+
 const orderSchema = z
   .object({
     messageDescription: descriptionSchema(2000, "Message description"),
     photoCount: z.number().int().min(1).max(500),
     category: descriptionSchema(100, "Photo category"),
     photoDescription: descriptionSchema(4000, "Photo description"),
+    contact: descriptionSchema(254, "Contact")
+      .refine(
+        isValidContact,
+        "Enter a phone number, email address, or Telegram username",
+      ),
     website: z.literal("").default(""),
   })
   .strict();
@@ -328,6 +344,7 @@ const server = Bun.serve({
       `Количество фотографий: ${order.photoCount}`,
       `Категория фотографий: ${order.category}`,
       `Описание фотографий: ${order.photoDescription}`,
+      `Для обратной связи: ${order.contact}`,
     ].join("\n");
 
     const html = `
@@ -336,6 +353,7 @@ const server = Bun.serve({
       <p><strong>Количество фотографий:</strong> ${order.photoCount}</p>
       <p><strong>Категория фотографий:</strong> ${escapeHtml(order.category)}</p>
       <p><strong>Описание фотографий:</strong><br>${escapeHtml(order.photoDescription).replace(/\n/g, "<br>")}</p>
+      <p><strong>Для обратной связи:</strong> ${escapeHtml(order.contact)}</p>
     `;
 
     activeEmails += 1;
