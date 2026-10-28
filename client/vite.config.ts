@@ -8,6 +8,12 @@ const securityHeaders = {
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
 }
 
+const previewSecurityHeaders = {
+  ...securityHeaders,
+  'Content-Security-Policy':
+    "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; img-src 'self' data:; font-src 'self' data: https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self'; connect-src 'self'",
+}
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -17,6 +23,6 @@ export default defineConfig({
     },
   },
   preview: {
-    headers: securityHeaders,
+    headers: previewSecurityHeaders,
   },
 })
