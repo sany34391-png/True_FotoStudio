@@ -1,0 +1,68 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.server
+    env_file:
+      - ./server/.env
+    environment:
+      ALLOWED_ORIGINS: ${SITE_ORIGIN:?Set SITE_ORIGIN in the root .env file}
+      TRUST_PROXY: "true"
+    expose:
+      - "3001"
+    volumes:
+      - reviews_data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - bun
+        - -e
+        - >-
+          fetch('http://127.0.0.1:3001/api/health')
+          .then(async (response) => {
+            const result = await response.json();
+            process.exit(response.ok && result.emailConfigured ? 0 : 1);
+          })
+          .catch(() => process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.client
+      args:
+        VITE_SITE_URL: ${SITE_ORIGIN:?Set SITE_ORIGIN in the root .env file}
+    expose:
+      - "8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in the root .env file}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  reviews_data:
+  caddy_data:
+  caddy_config:

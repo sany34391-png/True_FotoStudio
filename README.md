@@ -1,90 +1,51 @@
-# React + TypeScript + Vite
+# True FotoStudio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The project contains a React/Vite website in `client` and a Bun API in `server`.
+The API handles photo-album order email and stores local customer reviews.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Install client dependencies if needed, then run each service in its own terminal:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+cd client
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
-# server
-
-To install dependencies:
-
-```bash
+```powershell
+cd server
 bun install
+bun run dev
 ```
 
-To run:
+The Vite development server proxies `/api` requests to `http://localhost:3001`.
+Set SMTP credentials in the ignored `server/.env` file before testing email;
+see [server/README.md](./server/README.md).
+The service prints photo albums only from customer-provided photographs. It does
+not offer photography sessions or printing of individual photographs.
 
-```bash
-bun run index.ts
-```
+## Production setup
 
-This project was created using `bun init` in bun v1.3.13. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+For a step-by-step deployment on a Linux VPS with Docker, see
+[deploy/README.md](./deploy/README.md).
+
+1. Choose and configure the public HTTPS domain.
+2. Set `VITE_SITE_URL=https://your-real-domain.example` in the client build
+   environment. The build then creates per-route metadata, canonical links,
+   `robots.txt`, and `sitemap.xml`. Without this value, it intentionally does
+   not emit placeholder domain URLs.
+3. Configure the production SMTP credentials as server environment variables.
+4. Deploy the Bun API behind HTTPS and route the same-origin `/api` path to it.
+5. Ensure `server/data/reviews.json` is on persistent writable storage. The
+   current JSON review store and rate limits support a single API instance;
+   use a database and shared rate limiter for multiple instances.
+6. Configure HTTPS and security headers at the production host. The
+   `client/public/_headers` file is supported by static hosts that use Netlify
+   `_headers` syntax; other hosts need equivalent configuration.
+7. Publish an accurate privacy notice and verify business claims, delivery,
+   prices, service area, and permissions for any customer reviews.
+
+Review submissions are published immediately after server-side validation.
+Visitors must agree to public display of their entered name and review. Details
+on API validation, storage, and abuse limits are in [server/README.md](./server/README.md).
