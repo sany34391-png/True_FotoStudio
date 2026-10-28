@@ -32,9 +32,9 @@ export default function Header() {
       aria-label="Шапка сайта"
     >
       <Link to="/" viewTransition className="header__logo" aria-label="TRUE, перейти на главную">
-        <img src={Logo} alt="Logo" width={30} height={30} />
+        <img src={Logo} alt="" width={30} height={30} />
       </Link>
-      <h1 className="header__title">True</h1>
+      <p className="header__title">True</p>
       <div className="header__theme-toggle" role="group" aria-label="Переключение темы">
         <ThemeToggle />
       </div>
@@ -46,8 +46,7 @@ export default function Header() {
         onClick={() => setOpen(false)}
       >
         <Link to="/" viewTransition>Главная</Link>
-        <Link to="/buyfoto" viewTransition>Заказать фото</Link>
-        <Link to="/portfolio" viewTransition>Портфолио</Link>
+        <Link to="/buyfoto" viewTransition>Заказать</Link>
         <Link to="/reviews" viewTransition>Отзывы</Link>
       </nav>
 

@@ -1,6 +1,6 @@
 # Server
 
-The Bun server accepts photo orders at `POST /api/orders` and sends them to
+The Bun server accepts photo-album orders at `POST /api/orders` and sends them to
 `t64117837@gmail.com` through SMTP. SMTP sender credentials stay on the server
 and must never be added to the client.
 
@@ -55,6 +55,28 @@ simultaneous SMTP sends help reduce spam and resource abuse. SMTP credentials
 are only read by the server. Limits are in-memory and reset when the server
 restarts; use an external rate limiter for a multi-instance production setup.
 
-Each order must include one reply contact: an international phone number, an
-email address, or a Telegram username (for example `@username`). The contact is
-validated on both client and server and included in the notification email.
+Each photo-album order must include one reply contact: an international phone
+number, an email address, or a Telegram username (for example `@username`). The
+contact is validated on both client and server and included in the notification
+email. The service prints photo albums from customer-provided photographs only;
+it does not offer photography or printing of individual photographs. The form
+does not upload files; agree separately on how to provide the photographs.
+
+## Local customer reviews
+
+`GET /api/reviews` returns the latest 100 reviews. `POST /api/reviews` validates
+the name, 1–5 star rating, review text, and explicit publication consent, then
+stores and publishes the review immediately in `server/data/reviews.json`.
+Output is rendered as text, not HTML. The endpoint enforces a 32 KB request
+limit, same-origin checks, a hidden honeypot, and a limit of three submissions
+per client IP per hour.
+
+The JSON file must be writable and kept on persistent storage in production.
+This simple file store and in-memory rate limit are intended for a single server
+instance; use a database and a shared rate limiter before deploying multiple
+instances. Back up `server/data/reviews.json`. To remove an inappropriate
+review, remove its entry from that file and restart the API.
+
+The review form tells visitors that their name and review are public and stores
+their consent timestamp. Confirm that your privacy notice and data-handling
+process meet the requirements that apply to your business before launch.

@@ -1,6 +1,5 @@
 
 import { Link } from "react-router-dom";
-import { yandexReviewsUrl } from "../../constants/yandexReviews";
 import "./Footer.scss";
 
 export default function Footer() {
@@ -12,7 +11,7 @@ export default function Footer() {
             <img src="/logo.svg" alt="" width={36} height={36} />
             <span>True</span>
           </Link>
-          <p>Печать фотографий и сохранение важных моментов.</p>
+          <p>Печать фотоальбомов из готовых фотографий.</p>
         </div>
 
         <section className="footer__contacts" aria-labelledby="footer-contacts-title">
@@ -38,12 +37,9 @@ export default function Footer() {
         <nav className="footer__nav" aria-label="Навигация в подвале сайта">
           <h2>Разделы сайта</h2>
           <Link to="/" viewTransition>Главная</Link>
-          <Link to="/buyfoto" viewTransition>Заказать фото</Link>
-          <Link to="/portfolio" viewTransition>Портфолио</Link>
+          <Link to="/buyfoto" viewTransition>Заказать</Link>
           <Link to="/reviews" viewTransition>Отзывы</Link>
-          <a href={yandexReviewsUrl} target="_blank" rel="noopener noreferrer">
-            Яндекс.Карты <span aria-hidden="true">↗</span>
-          </a>
+          <Link to="/privacy" viewTransition>Конфиденциальность</Link>
         </nav>
       </div>
 

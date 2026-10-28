@@ -1,16 +1,16 @@
 # Website security
 
-The client is a static React application and does not provide accounts, payment
-processing, or a private API. It sends basic security headers during Vite
-development and preview, and `public/_headers` configures the same protections
-on hosts that support the Netlify `_headers` format. A restrictive Content
-Security Policy is intentionally not configured so site images, fonts, and the
-Yandex reviews widget are not blocked.
+The React client communicates with the Bun API for photo-album orders and local
+reviews. The site does not provide user accounts or payment processing. Vite
+development and preview apply security headers, and `public/_headers` configures
+them for hosts that support the Netlify `_headers` format. The Content Security
+Policy allows only same-origin application resources plus Google Fonts; it does
+not allow third-party review widgets.
 
-For other hosting providers, configure the headers from `public/_headers` in
-the host's settings. The headers prevent MIME sniffing, deny framing by other
-sites, limit referrer details, and disable unused browser features. Enable HSTS
-(`Strict-Transport-Security`) at the HTTPS hosting layer only after the
-production domain is served exclusively over HTTPS. These basic headers cannot
-replace HTTPS, server-side validation, access controls, or backups if a backend
-is added later.
+For other hosting providers, configure equivalent headers in the host settings.
+The headers prevent MIME sniffing, deny framing by other sites, limit referrer
+details, and disable unused browser features. The API also validates request
+data, limits request sizes and rates, and adds its own response headers. Enable
+HSTS (`Strict-Transport-Security`) at the HTTPS hosting layer only after the
+production domain is served exclusively over HTTPS. These protections do not
+replace HTTPS, backups, or a production-appropriate data store and rate limiter.

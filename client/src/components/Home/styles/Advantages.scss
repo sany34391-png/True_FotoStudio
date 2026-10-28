@@ -52,6 +52,15 @@
     box-shadow: var(--shadow-sm);
     transition: transform 0.25s ease, border-color 0.25s ease,
       box-shadow 0.25s ease;
+    animation: advantage-card-in 520ms both;
+
+    &:nth-child(2) { animation-delay: 90ms; }
+    &:nth-child(3) { animation-delay: 180ms; }
+  }
+
+  @keyframes advantage-card-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   &__card-top {
@@ -131,5 +140,6 @@
 @media (prefers-reduced-motion: reduce) {
   .advantages__card {
     transition: none;
+    animation: none;
   }
 }

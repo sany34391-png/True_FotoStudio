@@ -8,17 +8,17 @@ export default function Hero() {
   return (
     <section className="hero" aria-label="Главный экран сайта">
       <div className="hero-content">
-        <h1>True - это лучший выбор в всей России</h1>
-        <p>• Мы работаем онлайн и предлагаем качественные услуги по созданию уникальных фотографий для вашего бизнеса.</p>
-        <p>• У нас доставка по всей России!</p>
-        <p>• Мы предлагаем индивидуальный подход к каждому клиенту и делаем фотографии, которые соответствуют вашим потребностям и ожиданиям.</p>
+        <span className="hero-eyebrow">Печатаем фотоальбомы</span>
+        <h1>Важные истории — в одном фотоальбоме</h1>
+        <p>
+          Печатаем фотоальбомы из ваших готовых фотографий, превращая их в
+          цельную историю, к которой приятно возвращаться.
+        </p>
+        <p>Опишите идею — согласуем наполнение, стоимость и сроки до печати.</p>
 
         <div className="hero-buttons">
           <Link to="/buyfoto" viewTransition className="hero-button hero-button_buyfoto">
-            Заказать фото
-          </Link>
-          <Link to="/portfolio" viewTransition className="hero-button hero-button_portfolio">
-            Наше портфолио
+            Заказать фотоальбом
           </Link>
         </div>
       </div>
@@ -28,17 +28,17 @@ export default function Hero() {
           <img
             src={ImgHeroStudio}
             className="hero-image-studio"
-            alt="Фото студии"
-            width={600}
-            height={400}
+            alt="Пространство студии True"
+            width={500}
+            height={375}
             fetchPriority="high"
           />
           <img
             src={ImgHeroTrueAdam}
             className="hero-image-trueadam"
-            alt="Фото True Adam человека сделано в студии"
-            width={200}
-            height={260}
+            alt="Примеры отпечатанных фотографий True"
+            width={800}
+            height={600}
           />
         </div>
       </div>

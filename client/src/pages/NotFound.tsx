@@ -1,24 +1,13 @@
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import "./NotFound.scss";
 
 export default function NotFound() {
-  useEffect(() => {
-    document.title = "Страница не найдена — True";
-
-    const meta = document.createElement("meta");
-    meta.name = "robots";
-    meta.content = "noindex, nofollow";
-
-    document.head.appendChild(meta);
-
-    return () => {
-      document.head.removeChild(meta);
-    };
-  }, []);
-
   return (
-    <main>
-      <h1>404</h1>
-      <p>Страница не найдена</p>
-    </main>
+    <section className="not-found">
+      <span>404</span>
+      <h1>Страница не найдена</h1>
+      <p>Возможно, ссылка устарела или адрес был введён с ошибкой.</p>
+      <Link to="/">Вернуться на главную</Link>
+    </section>
   );
 }

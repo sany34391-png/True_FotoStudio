@@ -101,6 +101,7 @@
 
   &__button,
   &__submit {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
@@ -115,11 +116,11 @@
     font-size: 15px;
     font-weight: var(--fw-bold);
     cursor: pointer;
-    transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 
     &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 28px color-mix(in srgb, var(--green) 28%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--green) 20%, transparent);
     }
 
     &:active { transform: translateY(-1px) scale(0.98); }
@@ -144,11 +145,11 @@
     border: 1px solid color-mix(in srgb, var(--on-green) 42%, transparent);
     border-radius: 50%;
     font-size: 18px;
-    transition: transform 220ms ease;
+    transition: transform 180ms ease;
   }
 
   &__button:hover &__button-arrow,
-  &__submit:hover span { transform: rotate(45deg); }
+  &__submit:hover span { transform: rotate(15deg); }
 
   &__note {
     display: block;
@@ -353,6 +354,12 @@
       margin: 0;
       color: var(--gray);
       font-size: 12px;
+    }
+
+    a {
+      color: var(--green);
+      font-weight: var(--fw-bold);
+      text-underline-offset: 3px;
     }
   }
 

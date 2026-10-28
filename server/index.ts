@@ -1,4 +1,8 @@
 import nodemailer from "nodemailer";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
 const MAX_BODY_BYTES = 32_768;
@@ -6,7 +10,14 @@ const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const MAX_TRACKED_CLIENTS = 1_000;
 const MAX_CONCURRENT_EMAILS = 3;
+const MAX_PUBLIC_REVIEWS = 100;
+const MAX_STORED_REVIEWS = 10_000;
+const REVIEW_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const REVIEW_RATE_LIMIT_MAX_REQUESTS = 3;
 const recipient = "t64117837@gmail.com";
+const reviewsFilePath = fileURLToPath(
+  new URL("./data/reviews.json", import.meta.url),
+);
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65_535).default(3001),
@@ -16,6 +27,7 @@ const envSchema = z.object({
   SMTP_USER: z.email().optional(),
   SMTP_PASS: z.string().min(1).optional(),
   ALLOWED_ORIGINS: z.string().optional(),
+  TRUST_PROXY: z.enum(["true", "false"]).default("false"),
 });
 
 const envResult = envSchema.safeParse(Bun.env);
@@ -76,9 +88,9 @@ function isValidContact(value: string) {
 const orderSchema = z
   .object({
     messageDescription: descriptionSchema(2000, "Message description"),
-    photoCount: z.number().int().min(1).max(500),
-    category: descriptionSchema(100, "Photo category"),
-    photoDescription: descriptionSchema(4000, "Photo description"),
+    albumCount: z.number().int().min(1).max(500),
+    albumType: descriptionSchema(100, "Photo album theme"),
+    albumDescription: descriptionSchema(4000, "Photo album description"),
     contact: descriptionSchema(254, "Contact")
       .refine(
         isValidContact,
@@ -88,6 +100,33 @@ const orderSchema = z
   })
   .strict();
 
+const reviewSubmissionSchema = z
+  .object({
+    name: descriptionSchema(50, "Name").refine(
+      (value) => value.length >= 2,
+      "Name must contain at least 2 characters",
+    ),
+    rating: z.number().int().min(1).max(5),
+    text: descriptionSchema(1200, "Review"),
+    consent: z.literal(true),
+    website: z.literal("").default(""),
+  })
+  .strict();
+
+const storedReviewSchema = z
+  .object({
+    id: z.uuid(),
+    name: descriptionSchema(50, "Name"),
+    rating: z.number().int().min(1).max(5),
+    text: descriptionSchema(1200, "Review"),
+    createdAt: z.iso.datetime(),
+    consentedAt: z.iso.datetime().optional(),
+  })
+  .strict();
+
+const storedReviewsSchema = z.array(storedReviewSchema).max(MAX_STORED_REVIEWS);
+type StoredReview = z.infer<typeof storedReviewSchema>;
+
 type RateLimitEntry = {
   count: number;
   resetAt: number;
@@ -95,6 +134,7 @@ type RateLimitEntry = {
 
 const rateLimits = new Map<string, RateLimitEntry>();
 let activeEmails = 0;
+let reviewWriteQueue: Promise<void> = Promise.resolve();
 
 const securityHeaders = {
   "Cache-Control": "no-store",
@@ -119,7 +159,7 @@ function hasUnsupportedControlCharacters(value: string) {
       (codePoint <= 0x08 ||
         (codePoint >= 0x0b && codePoint <= 0x0c) ||
         (codePoint >= 0x0e && codePoint <= 0x1f) ||
-        codePoint === 0x7f)
+        (codePoint >= 0x7f && codePoint <= 0x9f))
     ) {
       return true;
     }
@@ -134,7 +174,7 @@ function isAllowedOrigin(request: Request) {
 
   const origin = request.headers.get("origin");
   if (!origin) {
-    return true;
+    return false;
   }
 
   let parsedOrigin: URL;
@@ -161,10 +201,24 @@ function isAllowedOrigin(request: Request) {
   );
 }
 
-function consumeRateLimit(clientAddress: string, now = Date.now()) {
-  let entry = rateLimits.get(clientAddress);
+function getClientAddress(request: Request, fallbackAddress: string | undefined) {
+  const forwardedAddress =
+    env.TRUST_PROXY === "true"
+      ? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+      : undefined;
+
+  return forwardedAddress || fallbackAddress || "unknown";
+}
+
+function consumeRateLimit(
+  key: string,
+  maxRequests = RATE_LIMIT_MAX_REQUESTS,
+  windowMs = RATE_LIMIT_WINDOW_MS,
+  now = Date.now(),
+) {
+  let entry = rateLimits.get(key);
   if (entry && entry.resetAt <= now) {
-    rateLimits.delete(clientAddress);
+    rateLimits.delete(key);
     entry = undefined;
   }
 
@@ -181,14 +235,14 @@ function consumeRateLimit(clientAddress: string, now = Date.now()) {
       return { allowed: false, retryAfter: RATE_LIMIT_WINDOW_MS };
     }
 
-    rateLimits.set(clientAddress, {
+    rateLimits.set(key, {
       count: 1,
-      resetAt: now + RATE_LIMIT_WINDOW_MS,
+      resetAt: now + windowMs,
     });
     return { allowed: true, retryAfter: 0 };
   }
 
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+  if (entry.count >= maxRequests) {
     return {
       allowed: false,
       retryAfter: Math.max(1, entry.resetAt - now),
@@ -197,6 +251,59 @@ function consumeRateLimit(clientAddress: string, now = Date.now()) {
 
   entry.count += 1;
   return { allowed: true, retryAfter: 0 };
+}
+
+async function readStoredReviews(): Promise<StoredReview[]> {
+  const contents = await readFile(reviewsFilePath, "utf8");
+  const parsed = storedReviewsSchema.safeParse(JSON.parse(contents) as unknown);
+  if (!parsed.success) {
+    throw new Error("Stored review data does not match the expected schema.");
+  }
+  return parsed.data;
+}
+
+function toPublicReview(review: StoredReview) {
+  return {
+    id: review.id,
+    name: review.name,
+    rating: review.rating,
+    text: review.text,
+    createdAt: review.createdAt,
+  };
+}
+
+async function saveReview(review: StoredReview) {
+  const writeOperation = reviewWriteQueue.then(async () => {
+    const reviews = await readStoredReviews();
+    if (reviews.length >= MAX_STORED_REVIEWS) {
+      throw new Error("Review storage limit reached.");
+    }
+
+    const nextReviews = [review, ...reviews];
+    const temporaryPath = join(
+      dirname(reviewsFilePath),
+      `.reviews-${randomUUID()}.tmp`,
+    );
+
+    await mkdir(dirname(reviewsFilePath), { recursive: true });
+    try {
+      await writeFile(temporaryPath, `${JSON.stringify(nextReviews, null, 2)}\n`, {
+        encoding: "utf8",
+        flag: "wx",
+        mode: 0o600,
+      });
+      await rename(temporaryPath, reviewsFilePath);
+    } catch (error) {
+      await rm(temporaryPath, { force: true });
+      throw error;
+    }
+  });
+
+  reviewWriteQueue = writeOperation.then(
+    () => undefined,
+    () => undefined,
+  );
+  await writeOperation;
 }
 
 async function readJsonBody(
@@ -262,6 +369,104 @@ const server = Bun.serve({
       return jsonResponse({ status: "ok", emailConfigured: smtpConfigured });
     }
 
+    if (url.pathname === "/api/reviews") {
+      if (request.method === "GET") {
+        try {
+          const reviews = await readStoredReviews();
+          return jsonResponse(reviews.slice(0, MAX_PUBLIC_REVIEWS).map(toPublicReview));
+        } catch (error) {
+          console.error("Could not read local reviews:", error);
+          return jsonResponse({ error: "Не удалось загрузить отзывы." }, 500);
+        }
+      }
+
+      if (request.method !== "POST") {
+        return jsonResponse({ error: "Method not allowed" }, 405, { Allow: "GET, POST" });
+      }
+
+      if (!isAllowedOrigin(request)) {
+        return jsonResponse({ error: "Request origin is not allowed" }, 403);
+      }
+
+      if (!request.headers.get("content-type")?.match(/^application\/json(?:\s*;|$)/i)) {
+        return jsonResponse({ error: "Expected JSON request body" }, 415);
+      }
+
+      const contentLengthHeader = request.headers.get("content-length");
+      if (contentLengthHeader !== null) {
+        if (!/^\d+$/.test(contentLengthHeader)) {
+          return jsonResponse({ error: "Invalid Content-Length" }, 400);
+        }
+        if (Number(contentLengthHeader) > MAX_BODY_BYTES) {
+          return jsonResponse({ error: "Request is too large" }, 413);
+        }
+      }
+
+      const clientAddress = getClientAddress(
+        request,
+        server.requestIP(request)?.address,
+      );
+      const rateLimit = consumeRateLimit(
+        `review:${clientAddress}`,
+        REVIEW_RATE_LIMIT_MAX_REQUESTS,
+        REVIEW_RATE_LIMIT_WINDOW_MS,
+      );
+      if (!rateLimit.allowed) {
+        return jsonResponse(
+          { error: "Слишком много отзывов. Попробуйте отправить отзыв позже." },
+          429,
+          { "Retry-After": String(Math.ceil(rateLimit.retryAfter / 1000)) },
+        );
+      }
+
+      const body = await readJsonBody(request);
+      if (!body.ok) {
+        return jsonResponse(
+          { error: body.tooLarge ? "Request is too large" : "Invalid JSON" },
+          body.tooLarge ? 413 : 400,
+        );
+      }
+
+      if (
+        typeof body.value === "object" &&
+        body.value !== null &&
+        "website" in body.value &&
+        body.value.website !== ""
+      ) {
+        return jsonResponse({ message: "Спасибо за отзыв!" }, 201);
+      }
+
+      const parsed = reviewSubmissionSchema.safeParse(body.value);
+      if (!parsed.success) {
+        return jsonResponse(
+          {
+            error: "Проверьте заполнение полей.",
+            fieldErrors: parsed.error.flatten().fieldErrors,
+          },
+          400,
+        );
+      }
+
+      const now = new Date().toISOString();
+      const review = storedReviewSchema.parse({
+        id: randomUUID(),
+        name: parsed.data.name,
+        rating: parsed.data.rating,
+        text: parsed.data.text,
+        createdAt: now,
+        consentedAt: now,
+      });
+
+      try {
+        await saveReview(review);
+      } catch (error) {
+        console.error("Could not save local review:", error);
+        return jsonResponse({ error: "Не удалось сохранить отзыв." }, 500);
+      }
+
+      return jsonResponse({ review: toPublicReview(review) }, 201);
+    }
+
     if (url.pathname !== "/api/orders") {
       return jsonResponse({ error: "Not found" }, 404);
     }
@@ -288,8 +493,11 @@ const server = Bun.serve({
       }
     }
 
-    const clientAddress = server.requestIP(request)?.address ?? "unknown";
-    const rateLimit = consumeRateLimit(clientAddress);
+    const clientAddress = getClientAddress(
+      request,
+      server.requestIP(request)?.address,
+    );
+    const rateLimit = consumeRateLimit(`order:${clientAddress}`);
     if (!rateLimit.allowed) {
       return jsonResponse(
         { error: "Слишком много попыток. Попробуйте отправить заявку позже." },
@@ -318,7 +526,7 @@ const server = Bun.serve({
     }
 
     if (!transporter || !env.SMTP_USER) {
-      console.error("Cannot send photo order: SMTP is not configured.");
+      console.error("Cannot send photo album order: SMTP is not configured.");
       return jsonResponse(
         {
           error:
@@ -341,18 +549,18 @@ const server = Bun.serve({
       "Новый заказ с сайта True FotoStudio",
       "",
       `Описание сообщения: ${order.messageDescription}`,
-      `Количество фотографий: ${order.photoCount}`,
-      `Категория фотографий: ${order.category}`,
-      `Описание фотографий: ${order.photoDescription}`,
+      `Количество фотоальбомов: ${order.albumCount}`,
+      `Тема фотоальбома: ${order.albumType}`,
+      `Пожелания к фотоальбому: ${order.albumDescription}`,
       `Для обратной связи: ${order.contact}`,
     ].join("\n");
 
     const html = `
       <h1>Новый заказ с сайта True FotoStudio</h1>
       <p><strong>Описание сообщения:</strong><br>${escapeHtml(order.messageDescription).replace(/\n/g, "<br>")}</p>
-      <p><strong>Количество фотографий:</strong> ${order.photoCount}</p>
-      <p><strong>Категория фотографий:</strong> ${escapeHtml(order.category)}</p>
-      <p><strong>Описание фотографий:</strong><br>${escapeHtml(order.photoDescription).replace(/\n/g, "<br>")}</p>
+      <p><strong>Количество фотоальбомов:</strong> ${order.albumCount}</p>
+      <p><strong>Тема фотоальбома:</strong> ${escapeHtml(order.albumType)}</p>
+      <p><strong>Пожелания к фотоальбому:</strong><br>${escapeHtml(order.albumDescription).replace(/\n/g, "<br>")}</p>
       <p><strong>Для обратной связи:</strong> ${escapeHtml(order.contact)}</p>
     `;
 
@@ -361,12 +569,12 @@ const server = Bun.serve({
       await transporter.sendMail({
         from: env.SMTP_USER,
         to: recipient,
-        subject: `Новый заказ на фото (${order.photoCount} шт.)`,
+        subject: `Новый заказ на фотоальбом (${order.albumCount} шт.)`,
         text,
         html,
       });
     } catch {
-      console.error("Failed to send photo order email through SMTP.");
+      console.error("Failed to send photo album order email through SMTP.");
       return jsonResponse(
         { error: "Не удалось отправить заказ. Попробуйте позже или свяжитесь напрямую." },
         502,

@@ -1,20 +1,21 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 import "./styles/order.scss";
 
 type OrderFields = {
   messageDescription: string;
-  photoCount: string;
-  category: string;
-  photoDescription: string;
+  albumCount: string;
+  albumType: string;
+  albumDescription: string;
   contact: string;
 };
 
 const initialFields: OrderFields = {
   messageDescription: "",
-  photoCount: "1",
-  category: "",
-  photoDescription: "",
+  albumCount: "1",
+  albumType: "",
+  albumDescription: "",
   contact: "",
 };
 
@@ -58,14 +59,14 @@ function isValidContact(value: string) {
 
 const orderSchema = z.object({
   messageDescription: safeDescription("Напишите сообщение", 2000),
-  photoCount: z
+  albumCount: z
     .string()
     .trim()
     .regex(/^\d+$/, "Введите целое число")
     .transform(Number)
-    .pipe(z.number().int().min(1, "Минимум 1 фотография").max(500, "Максимум 500 фотографий")),
-  category: safeDescription("Укажите категорию", 100),
-  photoDescription: safeDescription("Опишите, какими должны быть фотографии", 4000),
+    .pipe(z.number().int().min(1, "Минимум 1 альбом").max(500, "Максимум 500 альбомов")),
+  albumType: safeDescription("Укажите тему фотоальбома", 100),
+  albumDescription: safeDescription("Опишите пожелания к фотоальбому", 4000),
   contact: safeDescription("Укажите телефон, email или Telegram", 254).refine(
     isValidContact,
     "Введите телефон, email или Telegram-имя (например, @username)",
@@ -86,6 +87,9 @@ export default function Order() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSending, setIsSending] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const completedFields = Object.values(fields).filter((value) => value.trim().length > 0).length;
+  const progressLabel = `${String(completedFields).padStart(2, "0")} / 05`;
 
   const updateField = (field: OrderField, value: string) => {
     setFields((current) => ({ ...current, [field]: value }));
@@ -159,14 +163,14 @@ export default function Order() {
       <div className="photo-order__intro">
         <span className="photo-order__eyebrow">
           <span className="photo-order__eyebrow-dot" />
-          Ваша история — в кадре
+          Печатаем фотоальбомы из ваших готовых фотографий
         </span>
         <h1 id="photo-order-title" className="photo-order__title">
-          Заказать <span>фото</span>
+          Заказать <span>альбом</span>
         </h1>
         <p className="photo-order__description">
-          Расскажите, что хотите сохранить на снимках. Обсудим детали и поможем
-          превратить вашу идею в фотографии, к которым захочется возвращаться.
+          Опишите идею фотоальбома и оставьте контакт. Мы согласуем параметры,
+          наполнение, стоимость и сроки до печати.
         </p>
         <button
           className="photo-order__button"
@@ -179,12 +183,11 @@ export default function Order() {
             setErrors({});
           }}
         >
-          {isFormOpen ? "Скрыть форму" : "Заказать съёмку"}
+          {isFormOpen ? "Скрыть форму" : "Заказать фотоальбом"}
           <span className="photo-order__button-arrow" aria-hidden="true">
             {isFormOpen ? "−" : "↗"}
           </span>
         </button>
-        <span className="photo-order__note">Ответим и согласуем всё лично</span>
       </div>
 
       <aside className="photo-order__contacts" aria-label="Контакты">
@@ -230,7 +233,13 @@ export default function Order() {
               <span className="photo-order__eyebrow">Несколько деталей</span>
               <h2>Расскажите о заказе</h2>
             </div>
-            <span className="photo-order__step">01 / 05</span>
+            <span
+              className="photo-order__step"
+              aria-label={`Заполнено полей: ${completedFields} из 5`}
+              aria-live="polite"
+            >
+              {progressLabel}
+            </span>
           </div>
 
           <label className="photo-order__field">
@@ -255,62 +264,62 @@ export default function Order() {
 
           <div className="photo-order__form-row">
             <label className="photo-order__field">
-              <span><b>02</b> Количество фоток</span>
+              <span><b>02</b> Количество фотоальбомов</span>
               <input
-                name="photoCount"
+                name="albumCount"
                 type="number"
                 min="1"
                 max="500"
-                value={fields.photoCount}
-                onChange={(event) => updateField("photoCount", event.target.value)}
-                aria-invalid={Boolean(errors.photoCount)}
-                aria-describedby={errors.photoCount ? "photo-count-error" : undefined}
+                value={fields.albumCount}
+                onChange={(event) => updateField("albumCount", event.target.value)}
+                aria-invalid={Boolean(errors.albumCount)}
+                aria-describedby={errors.albumCount ? "album-count-error" : undefined}
                 required
               />
-              {errors.photoCount && (
-                <span className="photo-order__field-error" id="photo-count-error" role="alert">
-                  {errors.photoCount}
+              {errors.albumCount && (
+                <span className="photo-order__field-error" id="album-count-error" role="alert">
+                  {errors.albumCount}
                 </span>
               )}
             </label>
 
             <label className="photo-order__field">
-              <span><b>03</b> Категория фоток</span>
+              <span><b>03</b> Тема фотоальбома</span>
               <input
-                name="category"
+                name="albumType"
                 type="text"
-                placeholder="Портрет, семья, событие..."
-                value={fields.category}
-                onChange={(event) => updateField("category", event.target.value)}
+                placeholder="Семья, путешествие, событие..."
+                value={fields.albumType}
+                onChange={(event) => updateField("albumType", event.target.value)}
                 maxLength={100}
-                aria-invalid={Boolean(errors.category)}
-                aria-describedby={errors.category ? "photo-category-error" : undefined}
+                aria-invalid={Boolean(errors.albumType)}
+                aria-describedby={errors.albumType ? "album-type-error" : undefined}
                 required
               />
-              {errors.category && (
-                <span className="photo-order__field-error" id="photo-category-error" role="alert">
-                  {errors.category}
+              {errors.albumType && (
+                <span className="photo-order__field-error" id="album-type-error" role="alert">
+                  {errors.albumType}
                 </span>
               )}
             </label>
           </div>
 
           <label className="photo-order__field">
-            <span><b>04</b> Описание фотографий</span>
+            <span><b>04</b> Пожелания к фотоальбому</span>
             <textarea
-              name="photoDescription"
-              placeholder="Какое настроение, место или детали важно учесть?"
-              value={fields.photoDescription}
-              onChange={(event) => updateField("photoDescription", event.target.value)}
+              name="albumDescription"
+              placeholder="Опишите желаемый размер, оформление и другие детали. Готовые фотографии передадите отдельно."
+              value={fields.albumDescription}
+              onChange={(event) => updateField("albumDescription", event.target.value)}
               maxLength={4000}
-              aria-invalid={Boolean(errors.photoDescription)}
-              aria-describedby={errors.photoDescription ? "photo-description-error" : undefined}
+              aria-invalid={Boolean(errors.albumDescription)}
+              aria-describedby={errors.albumDescription ? "album-description-error" : undefined}
               required
               rows={4}
             />
-            {errors.photoDescription && (
-              <span className="photo-order__field-error" id="photo-description-error" role="alert">
-                {errors.photoDescription}
+            {errors.albumDescription && (
+              <span className="photo-order__field-error" id="album-description-error" role="alert">
+                {errors.albumDescription}
               </span>
             )}
           </label>
@@ -337,7 +346,10 @@ export default function Order() {
           </label>
 
           <div className="photo-order__form-footer">
-            <p>Нажимая кнопку, вы отправляете заявку фотографу на почту.</p>
+            <p>
+              Отправляя заявку, вы просите связаться с вами.{" "}
+              <Link to="/privacy">Как используются данные</Link>.
+            </p>
             <button className="photo-order__submit" type="submit" disabled={isSending}>
               {isSending ? "Отправляем..." : "Отправить заявку"}
               {!isSending && <span aria-hidden="true">↗</span>}
